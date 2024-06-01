@@ -60,6 +60,51 @@ app.MapPut("/produtos/{id}", async (int id, LojaDbContext dbContext, Produto upd
     return Results.Ok(existingProduto);
 });
 
+app.MapPost("/createcliente", async (LojaDbContext DbContext, Cliente newCliente) =>
+{
+    DbContext.Clientes.Add(newCliente);
+    await DbContext.SaveChangesAsync();
+    return Results.Created($"/createcliente/{newCliente.Id}", newCliente);
+    });
 
+app.MapGet("/clientes", async(LojaDbContext dbContext) => 
+{
+    var clientes = await dbContext.Clientes.ToListAsync();
+    return Results.Ok(clientes);
+    });
+
+app.MapGet("/clientes/{id}", async(int id, LojaDbContext dbContext) => 
+{
+    var clientes = await dbContext.Clientes.FindAsync(id);
+    if (clientes == null)
+    {
+        return Results.NotFound($"Cliente with ID {id} not found.");
+    }
+    return Results.Ok(clientes);
+    });
+
+ // Endpoint para atualizar um Cliente existente
+app.MapPut("/clientes/{id}", async (int id, LojaDbContext dbContext, Cliente updatedCliente) =>
+{
+    // Verifica se o produto existe na base, conforme o id informado
+    // Se o produto existir na base, será retornado para dentro do objeto existingProduto
+    var existingCliente = await dbContext.Clientes.FindAsync(id);
+    if (existingCliente== null)
+    {
+        return Results.NotFound($"Cliente with ID {id} not found.");
+    }
+
+    // Atualiza os dados do existingProduto
+    existingCliente.Nome = updatedCliente.Nome;
+    existingCliente.Cpf = updatedCliente.Cpf;
+    existingCliente.Email = updatedCliente.Email;
+
+    // Salva no banco de dados
+    await dbContext.SaveChangesAsync();
+
+    // Retorna para o cliente que invocou o endpoint
+    return Results.Ok(existingCliente);
+});
+   
 
 app.Run();
