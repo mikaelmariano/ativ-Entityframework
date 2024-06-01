@@ -37,6 +37,28 @@ app.MapGet("/produtos/{id}", async(int id, LojaDbContext dbContext) =>
     return Results.Ok(produtos);
     });
 
+// Endpoint para atualizar um Produto existente
+app.MapPut("/produtos/{id}", async (int id, LojaDbContext dbContext, Produto updatedProduto) =>
+{
+    // Verifica se o produto existe na base, conforme o id informado
+    // Se o produto existir na base, será retornado para dentro do objeto existingProduto
+    var existingProduto = await dbContext.Produtos.FindAsync(id);
+    if (existingProduto == null)
+    {
+        return Results.NotFound($"Produto with ID {id} not found.");
+    }
+
+    // Atualiza os dados do existingProduto
+    existingProduto.Nome = updatedProduto.Nome;
+    existingProduto.Preco = updatedProduto.Preco;
+    existingProduto.Fornecedor = updatedProduto.Fornecedor;
+
+    // Salva no banco de dados
+    await dbContext.SaveChangesAsync();
+
+    // Retorna para o cliente que invocou o endpoint
+    return Results.Ok(existingProduto);
+});
 
 
 
