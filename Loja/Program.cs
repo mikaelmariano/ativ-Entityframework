@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using loja.data;
 using loja.models;
+using loja.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,6 +106,55 @@ app.MapPut("/clientes/{id}", async (int id, LojaDbContext dbContext, Cliente upd
     // Retorna para o cliente que invocou o endpoint
     return Results.Ok(existingCliente);
 });
+
+//Implementações Desafio 
+
+app.MapPost("/createfornecedor", async (LojaDbContext DbContext, Fornecedor newFornecedor) =>
+{
+    DbContext.Fornecedores.Add(newFornecedor);
+    await DbContext.SaveChangesAsync();
+    return Results.Created($"/createfornecedor/{newFornecedor.Id}", newFornecedor);
+    });
    
+app.MapGet("/fornecedores", async(LojaDbContext dbContext) => 
+{
+    var fornecedores = await dbContext.Fornecedores.ToListAsync();
+    return Results.Ok(fornecedores);
+    });
+
+ app.MapGet("/fornecedores/{id}", async(int id, LojaDbContext dbContext) => 
+{
+    var fornecedores = await dbContext.Fornecedores.FindAsync(id);
+    if (fornecedores == null)
+    {
+        return Results.NotFound($"Fornecedor with ID {id} not found.");
+    }
+    return Results.Ok(fornecedores);
+    });
+
+ // Endpoint para atualizar um Fornecedor existente
+app.MapPut("/fornecedor/{id}", async (int id, LojaDbContext dbContext, Fornecedor updatedFornecedor) =>
+{
+    // Verifica se o produto existe na base, conforme o id informado
+    // Se o produto existir na base, será retornado para dentro do objeto existingFornecedor
+    var existingFornecedor = await dbContext.Fornecedores.FindAsync(id);
+    if (existingFornecedor== null)
+    {
+        return Results.NotFound($"Cliente with ID {id} not found.");
+    }
+
+    // Atualiza os dados do existingFornecedor
+    existingFornecedor.Nome= updatedFornecedor.Nome;
+    existingFornecedor.Cnpj = updatedFornecedor.Cnpj;
+    existingFornecedor.Endereco = updatedFornecedor.Endereco;
+    existingFornecedor.Email = updatedFornecedor.Email;
+    existingFornecedor.Telefone = updatedFornecedor.Telefone;
+
+    // Salva no banco de dados
+    await dbContext.SaveChangesAsync();
+
+    // Retorna para o cliente que invocou o endpoint
+    return Results.Ok(existingFornecedor);
+});
 
 app.Run();
