@@ -280,6 +280,30 @@ app.MapDelete("/vendas/{id}", async (int id, VendaService vendaService) =>
     return Results.Ok();
 }).RequireAuthorization();
 
+app.MapGet("/vendas/produto/{produtoId}/detalhada", async (int produtoId, VendaService vendaService) =>
+{
+    var vendas = await vendaService.GetVendasPorProdutoDetalhadaAsync(produtoId);
+    return Results.Ok(vendas);
+}).RequireAuthorization();
+
+app.MapGet("/vendas/produto/{produtoId}/sumarizada", async (int produtoId, VendaService vendaService) =>
+{
+    var vendas = await vendaService.GetVendasPorProdutoSumarizadaAsync(produtoId);
+    return Results.Ok(vendas);
+}).RequireAuthorization();
+
+app.MapGet("/vendas/cliente/{clienteId}/detalhada", async (int clienteId, VendaService vendaService) =>
+{
+    var vendas = await vendaService.GetVendasPorClienteDetalhadaAsync(clienteId);
+    return Results.Ok(vendas);
+}).RequireAuthorization();
+
+app.MapGet("/vendas/cliente/{clienteId}/sumarizada", async (int clienteId, VendaService vendaService) =>
+{
+    var vendas = await vendaService.GetVendasPorClienteSumarizadaAsync(clienteId);
+    return Results.Ok(vendas);
+}).RequireAuthorization();
+
 app.Run();
 
 string GenerateToken(string email)
