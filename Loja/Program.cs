@@ -44,16 +44,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5000); // Porta HTTP para depuração
-    // Descomente e ajuste para usar HTTPS em produção
-    // options.ListenAnyIP(5001, listenOptions =>
-    // {
-    //     listenOptions.UseHttps("path/to/your/cert.pfx", "your-cert-password");
-    // });
-});
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
