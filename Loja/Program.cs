@@ -25,6 +25,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<FornecedorService>();
 builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddScoped<VendaService>();
 
 // Chave secreta de 256 bits (32 bytes)
 var secretKey = "your_very_secret_key_that_is_at_least_256_bits_long"; // Substitua por uma chave real
@@ -79,7 +80,7 @@ app.MapPost("/login", async (HttpContext context, UsuarioService usuarioService)
     await context.Response.WriteAsync(JsonSerializer.Serialize(new { token }));
 });
 
-// Endpoints protegidos
+// Endpoints protegidos para Produtos
 app.MapGet("/produtos", async (ProductService productService) =>
 {
     var produtos = await productService.GetAllProductsAsync();
@@ -91,7 +92,7 @@ app.MapGet("/produtos/{id}", async (int id, ProductService productService) =>
     var produto = await productService.GetProductByIdAsync(id);
     if (produto == null)
     {
-        return Results.NotFound($"Product with ID {id} not found.");
+        return Results.NotFound($"Produto com ID {id} não encontrado.");
     }
     return Results.Ok(produto);
 }).RequireAuthorization();
@@ -106,7 +107,7 @@ app.MapPut("/produtos/{id}", async (int id, Produto produto, ProductService prod
 {
     if (id != produto.Id)
     {
-        return Results.BadRequest("Product ID mismatch.");
+        return Results.BadRequest("ID do produto não corresponde.");
     }
 
     await productService.UpdateProductAsync(produto);
@@ -119,7 +120,7 @@ app.MapDelete("/produtos/{id}", async (int id, ProductService productService) =>
     return Results.Ok();
 }).RequireAuthorization();
 
-// Endpoints para Clientes
+// Endpoints protegidos para Clientes
 app.MapGet("/clientes", async (ClienteService clienteService) =>
 {
     var clientes = await clienteService.GetAllClientesAsync();
@@ -131,7 +132,7 @@ app.MapGet("/clientes/{id}", async (int id, ClienteService clienteService) =>
     var cliente = await clienteService.GetClienteByIdAsync(id);
     if (cliente == null)
     {
-        return Results.NotFound($"Client with ID {id} not found.");
+        return Results.NotFound($"Cliente com ID {id} não encontrado.");
     }
     return Results.Ok(cliente);
 }).RequireAuthorization();
@@ -146,7 +147,7 @@ app.MapPut("/clientes/{id}", async (int id, Cliente cliente, ClienteService clie
 {
     if (id != cliente.Id)
     {
-        return Results.BadRequest("Client ID mismatch.");
+        return Results.BadRequest("ID do cliente não corresponde.");
     }
 
     await clienteService.UpdateClienteAsync(cliente);
@@ -159,7 +160,7 @@ app.MapDelete("/clientes/{id}", async (int id, ClienteService clienteService) =>
     return Results.Ok();
 }).RequireAuthorization();
 
-// Endpoints para Fornecedores
+// Endpoints protegidos para Fornecedores
 app.MapGet("/fornecedores", async (FornecedorService fornecedorService) =>
 {
     var fornecedores = await fornecedorService.GetAllFornecedoresAsync();
@@ -171,7 +172,7 @@ app.MapGet("/fornecedores/{id}", async (int id, FornecedorService fornecedorServ
     var fornecedor = await fornecedorService.GetFornecedorByIdAsync(id);
     if (fornecedor == null)
     {
-        return Results.NotFound($"Supplier with ID {id} not found.");
+        return Results.NotFound($"Fornecedor com ID {id} não encontrado.");
     }
     return Results.Ok(fornecedor);
 }).RequireAuthorization();
@@ -186,7 +187,7 @@ app.MapPut("/fornecedores/{id}", async (int id, Fornecedor fornecedor, Fornecedo
 {
     if (id != fornecedor.Id)
     {
-        return Results.BadRequest("Supplier ID mismatch.");
+        return Results.BadRequest("ID do fornecedor não corresponde.");
     }
 
     await fornecedorService.UpdateFornecedorAsync(fornecedor);
@@ -199,7 +200,7 @@ app.MapDelete("/fornecedores/{id}", async (int id, FornecedorService fornecedorS
     return Results.Ok();
 }).RequireAuthorization();
 
-// Endpoints para Usuarios
+// Endpoints protegidos para Usuários
 app.MapGet("/usuarios", async (UsuarioService usuarioService) =>
 {
     var usuarios = await usuarioService.GetAllUsuariosAsync();
@@ -211,7 +212,7 @@ app.MapGet("/usuarios/{id}", async (int id, UsuarioService usuarioService) =>
     var usuario = await usuarioService.GetUsuarioByIdAsync(id);
     if (usuario == null)
     {
-        return Results.NotFound($"User with ID {id} not found.");
+        return Results.NotFound($"Usuário com ID {id} não encontrado.");
     }
     return Results.Ok(usuario);
 }).RequireAuthorization();
@@ -226,7 +227,7 @@ app.MapPut("/usuarios/{id}", async (int id, Usuario usuario, UsuarioService usua
 {
     if (id != usuario.Id)
     {
-        return Results.BadRequest("User ID mismatch.");
+        return Results.BadRequest("ID do usuário não corresponde.");
     }
 
     await usuarioService.UpdateUsuarioAsync(usuario);
@@ -236,6 +237,46 @@ app.MapPut("/usuarios/{id}", async (int id, Usuario usuario, UsuarioService usua
 app.MapDelete("/usuarios/{id}", async (int id, UsuarioService usuarioService) =>
 {
     await usuarioService.DeleteUsuarioAsync(id);
+    return Results.Ok();
+}).RequireAuthorization();
+
+// Endpoints protegidos para Vendas
+app.MapGet("/vendas", async (VendaService vendaService) =>
+{
+    var vendas = await vendaService.GetAllVendasAsync();
+    return Results.Ok(vendas);
+}).RequireAuthorization();
+
+app.MapGet("/vendas/{id}", async (int id, VendaService vendaService) =>
+{
+    var venda = await vendaService.GetVendaByIdAsync(id);
+    if (venda == null)
+    {
+        return Results.NotFound($"Venda com ID {id} não encontrada.");
+    }
+    return Results.Ok(venda);
+}).RequireAuthorization();
+
+app.MapPost("/vendas", async (Venda venda, VendaService vendaService) =>
+{
+    await vendaService.AddVendaAsync(venda);
+    return Results.Created($"/vendas/{venda.Id}", venda);
+}).RequireAuthorization();
+
+app.MapPut("/vendas/{id}", async (int id, Venda venda, VendaService vendaService) =>
+{
+    if (id != venda.Id)
+    {
+        return Results.BadRequest("ID da venda não corresponde.");
+    }
+
+    await vendaService.UpdateVendaAsync(venda);
+    return Results.Ok();
+}).RequireAuthorization();
+
+app.MapDelete("/vendas/{id}", async (int id, VendaService vendaService) =>
+{
+    await vendaService.DeleteVendaAsync(id);
     return Results.Ok();
 }).RequireAuthorization();
 
